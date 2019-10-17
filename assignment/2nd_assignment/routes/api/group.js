@@ -1,4 +1,5 @@
 const csvModule = require('../../modules/csv-module');
+const groupMixer = require('../../modules/group-mixer');
 const express = require('express');
 const router = express.Router();
 
@@ -7,7 +8,7 @@ router.get(['', '/'], function (req, res, next) {
     csvModule.csvToJson("groups.csv", (groups) => {
       for (var i = 0; i < members.length; i++) {
           for (var j = 0; j < groups.length; j++) {
-            if (groupIdx === groups[j].groupIdx) {
+            if (members[i].groupIdx === groups[j].groupIdx) {
               members[i]["group"] = groups[j].name;
               break;
             }
@@ -38,6 +39,12 @@ router.get('/:groupIdx', function (req, res, next) {
       res.send(result);
     })
   })
+});
+
+router.put('/mix', function (req, res, next) {
+  groupMixer.mix();
+
+  res.send("complete");
 });
 
 module.exports = router;

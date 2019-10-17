@@ -4,20 +4,14 @@ const csvtojson = require('csvtojson');
 
 const csvModule = {
     jsonToCsv: (json, fileName, callback) => {
-        json2csv({
-            data: json,
-            fields: Object.keys(json)
-        }, function (err, csv) {
-            if (err) console.log(err);
-            console.log(csv);
-            fs.writeFile(fileName, csv, function (err) {
-                if (err) throw err;
-                console.log("'" + fileName + ".csv' file saved");
-                if (callback) {
-                    callback(csv);
-                }
-            });
-        });
+        const csvData = json2csv.parse(json);
+        fs.writeFile(fileName, csvData, (err) =>{
+            if (err) throw err;
+            console.log("'" + fileName + ".csv' file saved");
+            if (callback) {
+                callback(csv);
+            }
+        })
     },
 
     csvToJson: (fileName, callback) => {
