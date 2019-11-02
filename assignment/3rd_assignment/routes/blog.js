@@ -3,7 +3,7 @@ const statusCode = require('../module/statusCode');
 const authUtil = require('../module/authUtil');
 const responseMessage = require('../module/responseMessage');
 const blogModel = require('../model/blog');
-const articleModel = require('../model/blog');
+const articleModel = require('../model/article');
 const router = express.Router();
 
 router.get('', function (req, res, next) {
