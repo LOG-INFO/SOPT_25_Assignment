@@ -21,9 +21,9 @@ module.exports =  {
             });
         });
     },
-    readAll: () => {
+    readAll: (blogId) => {
         return new Promise((resolve, reject) => {
-            pool.queryParam_None('SELECT * FROM article', (result)=>{
+            pool.queryParam_None(`SELECT * FROM article WHERE blog_id = ${blogId}`, (result)=>{
                 if(result){
                     resolve({
                         code: statusCode.OK,

@@ -6,7 +6,10 @@ const articleModel = require('../model/article');
 const router = express.Router();
 
 router.get('', function (req, res, next) {
-  articleModel.readAll().then(({code, json}) => {
+  const {blogId} = req.params;
+  console.log(blogId);
+
+  articleModel.readAll(blogId).then(({code, json}) => {
     res.status(code).send(json);
   }).catch(err => {
     console.log(err);
@@ -36,9 +39,8 @@ router.post('', function(req, res, next) {
   });
 });
 
-router.put('/:articleId', function(req, res, next) {
-  const {articleId} = req.params;
-  const {userId, blogId, title, content} = req.body;
+router.put('', function(req, res, next) {
+  const {articleId, userId, blogId, title, content} = req.body;
 
   articleModel.update(articleId, userId, blogId, title, content).then(({code, json}) => {
     res.status(code).send(json);
@@ -48,10 +50,10 @@ router.put('/:articleId', function(req, res, next) {
   });
 });
 
-router.delete('/:blogId', function(req, res, next) {
-  const {blogId} = req.params;
+router.delete('', function(req, res, next) {
+  const {articleId} = req.body;
   
-  articleModel.delete(blogId).then(({code, json}) => {
+  articleModel.delete(articleId).then(({code, json}) => {
     res.status(code).send(json);
   }).catch(err => {
     console.log(err);
