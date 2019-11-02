@@ -1,9 +1,8 @@
 const express = require('express');
 const router = express.Router();
 
-router.use('/blogs',require('./blog'))
-router.use('/articles',require('./article'))
-router.use('/comments',require('./comment'))
+router.use('/users', require('./user'));
+router.use('/boards', require('./board'));
 
 /* GET home page. */
 router.get('/', function(req, res, next) {

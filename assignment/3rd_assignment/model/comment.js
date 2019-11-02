@@ -4,33 +4,33 @@ const authUtil = require('../module/authUtil');
 const pool = require('../module/pool');
 
 module.exports =  {
-    create: (userId, blogId, title, content) => {
+    create: (userId, articleId, content) => {
         return new Promise((resolve, reject) => {
-            const params = [ userId, blogId, title, content];
+            const params = [ userId, articleId, content];
 
-            pool.queryParam_Arr('INSERT INTO article(user_id, blog_id, title, content) VALUES(?, ?, ?, ?)', params, (result)=>{
+            pool.queryParam_Arr('INSERT INTO comment(user_id, article_id, content) VALUES(?, ?, ?)', params, (result)=>{
                 if(result){
                     console.log(result);
                     resolve({
                         code: statusCode.OK,
-                        json: authUtil.successTrue(responseMessage.ARTICLE_CREATE_SUCCESS , result[0])
+                        json: authUtil.successTrue(responseMessage.COMMENT_CREATE_SUCCESS , result[0])
                     });
                 }else{
-                    reject(authUtil.successFalse(responseMessage.ARTICLE_CREATE_FAIL));
+                    reject(authUtil.successFalse(responseMessage.COMMENT_CREATE_FAIL));
                 }
             });
         });
     },
-    readAll: () => {
+    readAll: (articleId) => {
         return new Promise((resolve, reject) => {
-            pool.queryParam_None('SELECT * FROM article', (result)=>{
+            pool.queryParam_None(`SELECT * FROM comment WHERE article_id = ${articleId}`, (result)=>{
                 if(result){
                     resolve({
                         code: statusCode.OK,
-                        json: authUtil.successTrue(responseMessage.ARTICLE_READ_ALL_SUCCESS, result[0])
+                        json: authUtil.successTrue(responseMessage.COMMENT_READ_ALL_SUCCESS, result[0])
                     });
                 }else{
-                    reject(authUtil.successFalse(responseMessage.ARTICLE_READ_ALL_FAIL));
+                    reject(authUtil.successFalse(responseMessage.COMMENT_READ_ALL_FAIL));
                 }
             });
         });
@@ -38,38 +38,35 @@ module.exports =  {
     read: (id) => {
         const params = [id];
         return new Promise((resolve, reject) => {
-            pool.queryParam_Arr('SELECT * FROM article WHERE id = ?', params, (result)=>{
+            pool.queryParam_Arr('SELECT * FROM comment WHERE id = ?', params, (result)=>{
                 if(result){
                     resolve({
                         code: statusCode.OK,
-                        json: authUtil.successTrue(responseMessage.ARTICLE_READ_SUCCESS, result[0])
+                        json: authUtil.successTrue(responseMessage.COMMENT_READ_SUCCESS, result[0])
                     });
                 }else{
-                    reject(authUtil.successFalse(responseMessage.ARTICLE_READ_FAIL));
+                    reject(authUtil.successFalse(responseMessage.COMMENT_READ_FAIL));
                 }
             });
         });
     },
-    update: (id, userId, blogId, title, content) => {
+    update: (id, userId, articleId, content) => {
         return new Promise((resolve, reject) => {
-            let query = 'UPDATE article SET ';
+            let query = 'UPDATE comment SET ';
 
             if(!id){
                 reject("No Target");
             }
 
-            if(!(userId||blogId||title||content)){
+            if(!(userId||articleId||content)){
                 reject("No Change");
             }
 
             if(userId){
                 query += `user_id =  ${userId},`;
             }
-            if(blogId){
-                query += `blog_id =  ${blogId},`;
-            }
-            if(title){
-                query += `title =  '${title}',`;
+            if(articleId){
+                query += `article_id =  ${articleId},`;
             }
             if(content){
                 query += `content =  '${content}',`;
@@ -78,15 +75,14 @@ module.exports =  {
             query += 'updated_time=now()';
             query += ' WHERE id = ' + id;
 
-            console.log(query);
             pool.queryParam_None(query, (result)=>{
                 if(result){
                     resolve({
                         code: statusCode.OK,
-                        json: authUtil.successTrue(responseMessage.ARTICLE_UPDATE_SUCCESS, id)
+                        json: authUtil.successTrue(responseMessage.COMMENT_UPDATE_SUCCESS, id)
                     });
                 }else{
-                    reject(authUtil.successFalse(responseMessage.ARTICLE_UPDATE_FAIL));
+                    reject(authUtil.successFalse(responseMessage.COMMENT_UPDATE_FAIL));
                 }
             });
         });
@@ -94,14 +90,14 @@ module.exports =  {
     delete: (id) => {
         return new Promise((resolve, reject) => {
             const params = [id];
-            pool.queryParam_Arr('DELETE FROM article WHERE id = ?', params, (result)=>{
+            pool.queryParam_Arr('DELETE FROM comment WHERE id = ?', params, (result)=>{
                 if(result){
                     resolve({
                         code: statusCode.OK,
-                        json: authUtil.successTrue(responseMessage.ARTICLE_DELETE_SUCCESS, id)
+                        json: authUtil.successTrue(responseMessage.COMMENT_DELETE_SUCCESS, id)
                     });
                 }else{
-                    reject(authUtil.successFalse(responseMessage.ARTICLE_DELETE_FAIL));
+                    reject(authUtil.successFalse(responseMessage.COMMENT_DELETE_FAIL));
                 }
             });
         });
