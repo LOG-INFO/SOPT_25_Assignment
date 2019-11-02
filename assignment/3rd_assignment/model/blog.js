@@ -42,7 +42,7 @@ module.exports =  {
                 if(result){
                     resolve({
                         code: statusCode.OK,
-                        json: authUtil.successTrue(responseMessage.BLOG_READ_ALL_SUCCESS, result[0])
+                        json: authUtil.successTrue(responseMessage.BLOG_READ_SUCCESS, result[0])
                     });
                 }else{
                     reject(authUtil.successFalse(responseMessage.BLOG_READ_FAIL));

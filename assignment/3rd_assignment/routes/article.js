@@ -2,11 +2,11 @@ const express = require('express');
 const statusCode = require('../module/statusCode');
 const authUtil = require('../module/authUtil');
 const responseMessage = require('../module/responseMessage');
-const blogModel = require('../model/blog');
+const articleModel = require('../model/article');
 const router = express.Router();
 
 router.get('', function (req, res, next) {
-  blogModel.readAll().then(({code, json}) => {
+  articleModel.readAll().then(({code, json}) => {
     res.status(code).send(json);
   }).catch(err => {
     console.log(err);
@@ -14,10 +14,10 @@ router.get('', function (req, res, next) {
   });
 });
 
-router.get('/:blogId', function(req, res, next) {
-  const {blogId} = req.params;
+router.get('/:articleId', function(req, res, next) {
+  const {articleId} = req.params;
   
-  blogModel.read(blogId).then(({code, json}) => {
+  articleModel.read(articleId).then(({code, json}) => {
     res.status(code).send(json);
   }).catch(err => {
     console.log(err);
@@ -26,9 +26,9 @@ router.get('/:blogId', function(req, res, next) {
 });
 
 router.post('', function(req, res, next) {
-  const {userId, name, url} = req.body;
+  const {userId, blogId, title, content} = req.body;
 
-  blogModel.create(userId, name, url).then(({code, json}) => {
+  articleModel.create(userId, blogId, title, content).then(({code, json}) => {
     res.status(code).send(json);
   }).catch(err => {
     console.log(err);
@@ -36,11 +36,11 @@ router.post('', function(req, res, next) {
   });
 });
 
-router.put('/:blogId', function(req, res, next) {
-  const {blogId} = req.params;
-  const {userId, name, url} = req.body;
+router.put('/:articleId', function(req, res, next) {
+  const {articleId} = req.params;
+  const {userId, blogId, title, content} = req.body;
 
-  blogModel.update(blogId, userId, name, url).then(({code, json}) => {
+  articleModel.update(articleId, userId, blogId, title, content).then(({code, json}) => {
     res.status(code).send(json);
   }).catch(err => {
     console.log(err);
@@ -51,7 +51,7 @@ router.put('/:blogId', function(req, res, next) {
 router.delete('/:blogId', function(req, res, next) {
   const {blogId} = req.params;
   
-  blogModel.delete(blogId).then(({code, json}) => {
+  articleModel.delete(blogId).then(({code, json}) => {
     res.status(code).send(json);
   }).catch(err => {
     console.log(err);
