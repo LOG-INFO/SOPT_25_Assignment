@@ -1,117 +1,119 @@
+const authUtil = require('../module/authUtil');
 const statusCode = require('../module/statusCode');
 const responseMessage = require('../module/responseMessage');
-const authUtil = require('../module/authUtil')
-const boardArr = [{
-    title: 'sopt',
-    content: 'hello',
-    writer: '솝트',
-    pwd: '1234',
-    time: Date.now(),
-}, {
-    title: 'heesung',
-    content: 'hello',
-    writer: '희성',
-    pwd: '1234',
-    time: Date.now()
-}];
+const pool = require('../module/poolAsync');
 
-module.exports =  {
-    create: (title, content, writer, pwd) => {
-        return new Promise((resolve, reject) => {
-            const idx = boardArr.push({
-                title,
-                content,
-                writer,
-                pwd,
-                time: Date.now()
+module.exports = {
+    create: ({
+        title,
+        content,
+        writerIdx
+    }) => {
+        const table = 'board';
+        const fields = 'title, content, writerIdx';
+        const questions = `?, ?, ?`;
+        const query = `INSERT INTO ${table}(${fields}) VALUES(${questions})`;
+        const values = [title, content, writerIdx];
+        return pool.queryParam_Parse(query, values)
+            .then(result => {
+                console.log(result);
+                const boardId = result.boardId;
+                return {
+                    code: statusCode.OK,
+                    json: authUtil.successTrue(responseMessage.BOARD_CREATE_SUCCESS, boardId)
+                };
+            })
+            .catch(err => {
+                // ER_NO_REFERENCED_ROW_2
+                if (err.errno == 1452) {
+                    console.log(err.errno, err.code);
+                    return {
+                        code: statusCode.BAD_REQUEST,
+                        json: authUtil.successFalse([responseMessage.BOARD_CREATE_FAIL, responseMessage.NO_USER].join(','))
+                    };
+                }
+                console.log(err);
+                throw err;
             });
-            resolve({
-                code: statusCode.OK,
-                json: authUtil.successTrue(
-                    responseMessage.BOARD_CREATE_SUCCESS,
-                    idx
-                )
-            });
-        });
     },
     readAll: () => {
-        return new Promise((resolve, reject) => {
-            resolve({
-                code: statusCode.OK,
-                json: authUtil.successTrue(
-                    responseMessage.BOARD_READ_ALL_SUCCESS,
-                    boardArr
-                )
+        const table = 'board';
+        const query = `SELECT * FROM ${table}`
+        return pool.queryParam_None(query)
+            .then(result => {
+                return {
+                    code: statusCode.OK,
+                    json: authUtil.successTrue(responseMessage.BOARD_READ_SUCCESS, result)
+                };
+            })
+            .catch(err => {
+                console.log(err);
+                throw err;
             });
-        });
     },
-    read: (idx) => {
-        return new Promise((resolve, reject) => {
-            if (idx >= boardArr.length) {
-                resolve({
-                    code: statusCode.BAD_REQUEST,
-                    json: authUtil.successFalse(responseMessage.NO_BOARD)
-                });
-                return;
-            }
-            resolve({
-                code: statusCode.OK,
-                json: authUtil.successTrue(
-                    responseMessage.BOARD_READ_ALL_SUCCESS,
-                    boardArr[idx])
+    read: ({
+        boardIdx
+    }) => {
+        const table = 'board';
+        const query = `SELECT * FROM ${table} WHERE boardIdx = '${boardIdx}'`;
+        return pool.queryParam_None(query)
+            .then(result => {
+                if (result.length == 0) {
+                    return {
+                        code: statusCode.BAD_REQUEST,
+                        json: authUtil.successFalse(responseMessage.NO_BOARD)
+                    };
+                }
+                return {
+                    code: statusCode.OK,
+                    json: authUtil.successTrue(responseMessage.BOARD_READ_SUCCESS, result[0])
+                };
+            })
+            .catch(err => {
+                console.log(err);
+                throw err;
             });
-        });
     },
-    update: (idx, title, content, writer, pwd) => {
-        return new Promise((resolve, reject) => {
-            // idx값 확인
-            if (idx >= boardArr.length) {
-                resolve({
-                    code: statusCode.BAD_REQUEST,
-                    json: authUtil.successFalse(responseMessage.NO_BOARD)
-                });
-                return;
-            }
-            // 비밀번호 확인
-            if (boardArr[idx].pwd != pwd) {
-                resolve({
-                    code: statusCode.FORBIDDEN,
-                    json: authUtil.successFalse(responseMessage.MISS_MATCH_PW)
-                });
-                return;
-            }
-            boardArr[idx].title = title;
-            boardArr[idx].content = content;
-            boardArr[idx].writer = writer;
-            resolve({
-                code: statusCode.OK,
-                json: authUtil.successTrue(responseMessage.BOARD_UPDATE_SUCCESS, boardArr[idx])
+    update: ({
+        boardIdx,
+        title,
+        content
+    }) => {
+        const table = 'board';
+        const conditions = [];
+        if (title) conditions.push(`title = '${title}'`);
+        if (content) conditions.push(`content = '${content}'`);
+        const setStr = conditions.length > 0 ? `SET ${conditions.join(',')}` : '';
+        const query = `UPDATE ${table} ${setStr} WHERE boardIdx = ${boardIdx}`;
+        return pool.queryParam_None(query)
+            .then(result => {
+                console.log(result);
+                return {
+                    code: statusCode.OK,
+                    json: authUtil.successTrue(responseMessage.BOARD_UPDATE_SUCCESS)
+                };
+            })
+            .catch(err => {
+                console.log(err);
+                throw err;
             });
-        });
     },
-    delete: (idx, pwd) => {
-        return new Promise((resolve, reject) => {
-            // idx값 확인
-            if (idx >= boardArr.length) {
-                resolve({
-                    code: statusCode.BAD_REQUEST,
-                    json: authUtil.successFalse(responseMessage.NO_BOARD)
-                });
-                return;
-            }
-            // 비밀번호 확인
-            if (boardArr[idx].pwd != pwd) {
-                resolve({
-                    code: statusCode.FORBIDDEN,
-                    json: authUtil.successFalse(responseMessage.MISS_MATCH_PW)
-                });
-                return;
-            }
-            boardArr[idx] = {};
-            resolve({
-                code: statusCode.OK,
-                json: authUtil.successTrue(responseMessage.BOARD_DELETE_SUCCESS)
+    delete: (whereJson = {}) => {
+        const table = 'board';
+        const conditions = Object.entries(whereJson).map(it => `${it[0]} = '${it[1]}'`).join(',');
+        const whereStr = conditions.length > 0 ? `WHERE ${conditions}` : '';
+        const query = `DELETE FROM ${table} ${whereStr}`
+        return pool.queryParam_None(query)
+            .then(result => {
+                console.log(result);
+                return {
+                    code: statusCode.OK,
+                    json: authUtil.successTrue(responseMessage.BOARD_DELETE_SUCCESS)
+                };
+            })
+            .catch(err => {
+                console.log(err);
+                throw err;
             });
-        });
-    }
+    },
 };
