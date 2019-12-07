@@ -7,7 +7,6 @@ const router = express.Router();
 
 router.get('', function (req, res, next) {
   const {blogId} = req.params;
-  console.log(blogId);
 
   articleModel.readAll(blogId).then(({code, json}) => {
     res.status(code).send(json);

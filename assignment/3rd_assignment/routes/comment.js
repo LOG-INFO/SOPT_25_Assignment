@@ -6,7 +6,9 @@ const commentModel = require('../model/comment');
 const router = express.Router();
 
 router.get('', function (req, res, next) {
-  commentModel.readAll().then(({code, json}) => {
+  const {articleId} = req.params;
+
+  commentModel.readAll(articleId).then(({code, json}) => {
     res.status(code).send(json);
   }).catch(err => {
     console.log(err);

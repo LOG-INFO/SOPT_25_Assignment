@@ -23,7 +23,14 @@ module.exports =  {
     },
     readAll: (articleId) => {
         return new Promise((resolve, reject) => {
-            pool.queryParam_None(`SELECT * FROM comment WHERE article_id = ${articleId}`, (result)=>{
+
+            var query = '';
+            if(articleId){
+                query = `SELECT * FROM comment WHERE article_id = ${articleId}`;
+            }else{
+                query = `SELECT * FROM comment`;
+            }
+            pool.queryParam_None(query, (result)=>{
                 if(result){
                     resolve({
                         code: statusCode.OK,
